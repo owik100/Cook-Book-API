@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Cook_Book_API.Data;
 using Cook_Book_API.Models;
+using System.Security.Claims;
 
 namespace Cook_Book_API.Controllers
 {
@@ -80,6 +81,8 @@ namespace Cook_Book_API.Controllers
         [HttpPost]
         public async Task<ActionResult<Recipes>> PostRecipes(Recipes recipes)
         {
+            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            recipes.UserId = UserId;
             _context.Products.Add(recipes);
             await _context.SaveChangesAsync();
 
@@ -106,5 +109,23 @@ namespace Cook_Book_API.Controllers
         {
             return _context.Products.Any(e => e.RecipesId == id);
         }
+
+        [HttpGet]
+        [Route("CurrentUserRecipes")]
+        //GET api/User/
+        public List<Recipes> GetUserRecipes()
+        {
+            List<Recipes> output = new List<Recipes>();
+
+            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier); //RequestContext.Principal.Identity.GetUserId();
+
+
+
+            output = _context.Products.Where(x => x.UserId == UserId).ToList();
+            
+
+            return output;
+        }
     }
 }
+

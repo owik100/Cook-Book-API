@@ -4,11 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Cook_Book_API.Models
+namespace Cook_Book_API.Data.DbModels
 {
-    public class Recipes
+    public class Recipe
     {
-        public int RecipesId { get; set; }
+        public int RecipeId { get; set; }
         public string Name { get; set; }
         public IEnumerable<string> Ingredients { get; set; }
         public string Instruction { get; set; }

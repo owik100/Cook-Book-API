@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Cook_Book_API.Data;
-using Cook_Book_API.Models;
+using Cook_Book_API.Data.DbModels;
 using System.Security.Claims;
 
 namespace Cook_Book_API.Controllers
@@ -24,16 +24,16 @@ namespace Cook_Book_API.Controllers
 
         // GET: api/Recipes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Recipes>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetProducts()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.Recipes.ToListAsync();
         }
 
         // GET: api/Recipes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Recipes>> GetRecipes(int id)
+        public async Task<ActionResult<Recipe>> GetRecipes(int id)
         {
-            var recipes = await _context.Products.FindAsync(id);
+            var recipes = await _context.Recipes.FindAsync(id);
 
             if (recipes == null)
             {
@@ -47,9 +47,9 @@ namespace Cook_Book_API.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRecipes(int id, Recipes recipes)
+        public async Task<IActionResult> PutRecipes(int id, Recipe recipes)
         {
-            if (id != recipes.RecipesId)
+            if (id != recipes.RecipeId)
             {
                 return BadRequest();
             }
@@ -79,27 +79,27 @@ namespace Cook_Book_API.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<Recipes>> PostRecipes(Recipes recipes)
+        public async Task<ActionResult<Recipe>> PostRecipes(Recipe recipes)
         {
             string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             recipes.UserId = UserId;
-            _context.Products.Add(recipes);
+            _context.Recipes.Add(recipes);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetRecipes", new { id = recipes.RecipesId }, recipes);
+            return CreatedAtAction("GetRecipes", new { id = recipes.RecipeId }, recipes);
         }
 
         // DELETE: api/Recipes/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Recipes>> DeleteRecipes(int id)
+        public async Task<ActionResult<Recipe>> DeleteRecipes(int id)
         {
-            var recipes = await _context.Products.FindAsync(id);
+            var recipes = await _context.Recipes.FindAsync(id);
             if (recipes == null)
             {
                 return NotFound();
             }
 
-            _context.Products.Remove(recipes);
+            _context.Recipes.Remove(recipes);
             await _context.SaveChangesAsync();
 
             return recipes;
@@ -107,21 +107,21 @@ namespace Cook_Book_API.Controllers
 
         private bool RecipesExists(int id)
         {
-            return _context.Products.Any(e => e.RecipesId == id);
+            return _context.Recipes.Any(e => e.RecipeId == id);
         }
 
         [HttpGet]
         [Route("CurrentUserRecipes")]
         //GET api/User/
-        public List<Recipes> GetUserRecipes()
+        public List<Recipe> GetUserRecipes()
         {
-            List<Recipes> output = new List<Recipes>();
+            List<Recipe> output = new List<Recipe>();
 
             string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier); //RequestContext.Principal.Identity.GetUserId();
 
 
 
-            output = _context.Products.Where(x => x.UserId == UserId).ToList();
+            output = _context.Recipes.Where(x => x.UserId == UserId).ToList();
             
 
             return output;

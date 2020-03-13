@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Cook_Book_API.Models
+namespace Cook_Book_API.Data.DbModels
 {
     public class ApplicationUser : IdentityUser
     {
-        public List<Recipes> Recipes { get; set; }
+        public List<Recipe> Recipes { get; set; }
     }
 }

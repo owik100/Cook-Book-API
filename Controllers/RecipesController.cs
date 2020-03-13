@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Cook_Book_API.Data;
 using Cook_Book_API.Data.DbModels;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Cook_Book_API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RecipesController : ControllerBase

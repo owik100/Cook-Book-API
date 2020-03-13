@@ -28,7 +28,7 @@ namespace Cook_Book_API.Controllers
 
         [Route("/token")]
         [HttpPost]
-        public async Task<IActionResult> Create(string username, string password, string grant_type)
+        public async Task<IActionResult> Create(string username, string password)
         {
             if(await IsValidUsernameAndPassword(username, password))
             {
@@ -36,7 +36,7 @@ namespace Cook_Book_API.Controllers
             }
             else
             {
-                return BadRequest();
+                return BadRequest(new { message = "Podany login lub hasło jest błędne" });
             }
         }
 
@@ -48,36 +48,7 @@ namespace Cook_Book_API.Controllers
 
         private async Task<dynamic> GenerateToken(string username)
         {
-            //var user = await _userManager.FindByEmailAsync(username);
-
-            //var claims = new List<Claim>
-            //{
-            //    new Claim(ClaimTypes.Name, username),
-            //    new Claim(ClaimTypes.NameIdentifier, user.Id),
-            //    new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds().ToString()),
-            //    new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(DateTime.Now.AddDays(10)).ToUnixTimeSeconds().ToString())
-            //};
-
-            //var token = new JwtSecurityToken(
-            //    new JwtHeader(
-            //        new SigningCredentials(
-            //            new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySecretKeyIsSecretDoNotTellAnymorePLISSS")),
-            //        SecurityAlgorithms.HmacSha256)),
-            //    new JwtPayload(claims));
-
-            //var output = new
-            //{
-            //    Access_Token = new JwtSecurityTokenHandler().WriteToken(token),
-            //    UserName = username
-            //};
-
-            //return output;
-
-
             var user = await _userManager.FindByEmailAsync(username);
-
-            if (user == null)
-                return BadRequest(new { message = "Username or password is incorrect" });
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config.GetValue<string>("Secrets:SecurityKey"));
@@ -97,15 +68,12 @@ namespace Cook_Book_API.Controllers
 
             // return basic user info and authentication token
 
-            var outpuy = new
+            var output = new
             {
                 Access_Token = tokenString,
                 UserName = username
             };
-            return outpuy;
-
-
-
+            return output;
         }
     }
 }

@@ -8,10 +8,11 @@ using Cook_Book_API.Data.DbModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Cook_Book_API.Controllers
 {
-   
+
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -19,9 +20,11 @@ namespace Cook_Book_API.Controllers
     {
         private readonly ApplicationDbContext _context;
 
+
         public UserController(ApplicationDbContext context)
         {
             _context = context;
+
         }
 
         [HttpGet]
@@ -30,16 +33,15 @@ namespace Cook_Book_API.Controllers
         {
             ApplicationUser output = new ApplicationUser();
 
-            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            
-            
-                var Usert = _context.Users.Find(UserId);
+            //Znajdź "zalogowanego" usera (token) po ID.
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                output.Email = Usert.Email;
-                output.Id = Usert.Id;
-                output.UserName = Usert.UserName;
-            
+            var user = _context.Users.Find(userId);
+
+            output.Email = user.Email;
+            output.Id = user.Id;
+            output.UserName = user.UserName;
 
             return output;
         }

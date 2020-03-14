@@ -19,6 +19,8 @@ namespace Cook_Book_API.Controllers
         private UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _config;
 
+        private IdentityUser _user;
+
         public TokenController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IConfiguration config)
         {
             _context = context;
@@ -26,13 +28,14 @@ namespace Cook_Book_API.Controllers
             _config = config;
         }
 
+        // /token
         [Route("/token")]
         [HttpPost]
-        public async Task<IActionResult> Create(string username, string password)
+        public async Task<IActionResult> GetToken(string username, string password)
         {
             if(await IsValidUsernameAndPassword(username, password))
             {
-                return new ObjectResult(await GenerateToken(username));
+                return new ObjectResult(GenerateToken());
             }
             else
             {
@@ -42,14 +45,12 @@ namespace Cook_Book_API.Controllers
 
         private async Task<bool> IsValidUsernameAndPassword(string username, string password)
         {
-            var user = await _userManager.FindByEmailAsync(username);
-            return await _userManager.CheckPasswordAsync(user, password);
+            _user = await _userManager.FindByNameAsync(username);
+            return await _userManager.CheckPasswordAsync(_user, password);
         }
 
-        private async Task<dynamic> GenerateToken(string username)
+        private dynamic GenerateToken()
         {
-            var user = await _userManager.FindByEmailAsync(username);
-
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config.GetValue<string>("Secrets:SecurityKey"));
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -57,8 +58,8 @@ namespace Cook_Book_API.Controllers
                 Subject = new ClaimsIdentity(new Claim[]
                 {
     
-                    new Claim(ClaimTypes.Name, username),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Name, _user.UserName),
+                    new Claim(ClaimTypes.NameIdentifier, _user.Id),
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -66,12 +67,10 @@ namespace Cook_Book_API.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            // return basic user info and authentication token
-
             var output = new
             {
                 Access_Token = tokenString,
-                UserName = username
+                UserName = _user.UserName
             };
             return output;
         }

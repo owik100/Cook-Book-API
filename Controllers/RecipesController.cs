@@ -88,7 +88,7 @@ namespace Cook_Book_API.Controllers
             _context.Recipes.Add(recipes);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetRecipes", new { id = recipes.RecipeId }, recipes);
+            return CreatedAtAction("PostRecipes", new { id = recipes.RecipeId }, recipes);
         }
 
         // DELETE: api/Recipes/5
@@ -114,18 +114,14 @@ namespace Cook_Book_API.Controllers
 
         [HttpGet]
         [Route("CurrentUserRecipes")]
-        //GET api/User/
+        //GET /api/Recipes/CurrentUserRecipes
         public List<Recipe> GetUserRecipes()
         {
             List<Recipe> output = new List<Recipe>();
 
-            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier); //RequestContext.Principal.Identity.GetUserId();
-
-
-
+            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
             output = _context.Recipes.Where(x => x.UserId == UserId).ToList();
             
-
             return output;
         }
     }

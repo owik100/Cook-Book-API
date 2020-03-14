@@ -36,6 +36,7 @@ namespace Cook_Book_API.Controllers
             _logger = logger;
         }
 
+        //  /api/Account/register
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]RegisterModel model)
@@ -51,7 +52,7 @@ namespace Cook_Book_API.Controllers
                 }
                 else
                 {
-                    return BadRequest(new { message = string.Join("\n", result.Errors.Select(x => "Code " + x.Code + " Description" + x.Description))});
+                    return BadRequest(new { message = string.Join("\n", result.Errors.Select(x => x.Description))});
                 }
             }
             catch (Exception ex)

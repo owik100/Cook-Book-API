@@ -39,6 +39,9 @@ namespace Cook_Book_API
             {
                 options.SignIn.RequireConfirmedAccount = true;
                 options.User.RequireUniqueEmail = true;
+
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
             }
                 
 

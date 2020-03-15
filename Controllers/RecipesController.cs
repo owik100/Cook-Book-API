@@ -9,19 +9,27 @@ using Cook_Book_API.Data;
 using Cook_Book_API.Data.DbModels;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using System.IO;
+using Cook_Book_API.Models;
 
 namespace Cook_Book_API.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RecipesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _config;
+        private readonly IHostEnvironment _hostEnvironment;
 
-        public RecipesController(ApplicationDbContext context)
+        public RecipesController(ApplicationDbContext context, IConfiguration config, IHostEnvironment hostEnvironment)
         {
             _context = context;
+            _config = config;
+            _hostEnvironment = hostEnvironment;
         }
 
         // GET: api/Recipes
@@ -81,14 +89,37 @@ namespace Cook_Book_API.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<Recipe>> PostRecipes(Recipe recipes)
+        public async Task<ActionResult<RecipeAPIModel>> PostRecipes([FromForm]RecipeAPIModel recipe)
         {
+            Recipe recipeDb = new Recipe();
+
             string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            recipes.UserId = UserId;
-            _context.Recipes.Add(recipes);
+
+            if (recipe.Image != null)
+            {
+                var filename = Guid.NewGuid();
+                var imagesPhotoPath = _config["ImagePath"];
+                var rootFolderPath = _hostEnvironment.ContentRootPath;
+                var relativePath = imagesPhotoPath + filename;
+                var path = rootFolderPath + relativePath;
+
+                using (var photoFile = new FileStream(path, FileMode.Create))
+                {
+                    recipe.Image.CopyTo(photoFile);
+                }
+
+                recipeDb.UserId = UserId;
+                recipeDb.NameOfImage = recipe.Image.FileName;
+                recipeDb.Name = recipe.Name;
+                recipeDb.Instruction = recipe.Instruction;
+                recipeDb.Ingredients = recipe.Ingredients;
+            }
+
+
+            _context.Recipes.Add(recipeDb);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("PostRecipes", new { id = recipes.RecipeId }, recipes);
+            return CreatedAtAction("PostRecipes", new { id = recipeDb.RecipeId }, recipe);
         }
 
         // DELETE: api/Recipes/5

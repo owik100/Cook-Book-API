@@ -16,7 +16,7 @@ using Cook_Book_API.Models;
 
 namespace Cook_Book_API.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RecipesController : ControllerBase
@@ -89,84 +89,55 @@ namespace Cook_Book_API.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<RecipeAPIModel>> PostRecipes(RecipeAPIModel recipe)
+        public async Task<ActionResult<RecipeAPIModel>> PostRecipes([FromForm]RecipeAPIModel recipe)
         {
+
+            // var form = Request.Form;
             Recipe recipeDb = new Recipe();
 
             string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (recipe.Image != null)
             {
-
-
-               // var filename = file.FileName;
-               // var imagesPhotoPath = ConfigurationManager.AppSetting["ProductsImagePath"];
-               // var rootFolderPath = _environment.WebRootPath;
-               //var relativePath = imagesPhotoPath + filename;
-              //  var path = rootFolderPath + relativePath;
-
                 var filename = Guid.NewGuid() + ".jpeg";
                 var imagesPhotoPath = _config["ImagePath"];
                 var rootFolderPath = _hostEnvironment.ContentRootPath + "\\wwwroot";
-                var relativePath = imagesPhotoPath + filename ;
+                var relativePath = imagesPhotoPath + filename;
                 var path = rootFolderPath + relativePath;
+                await SaveImage(path, recipe.Image);
 
 
-                Save(path, recipe.Image);
-
-                using (var photoFile = new FileStream(path, FileMode.Create))
-                {
-                    //recipe.Image.CopyTo(photoFile);
-                }
-
-                recipeDb.UserId = UserId;
                 recipeDb.NameOfImage = filename.ToString();
-                recipeDb.Name = recipe.Name;
-                recipeDb.Instruction = recipe.Instruction;
-                recipeDb.Ingredients = recipe.Ingredients;
 
-          
             }
 
+            recipeDb.UserId = UserId;
+            recipeDb.Name = recipe.Name;
+            recipeDb.Instruction = recipe.Instruction;
+            recipeDb.Ingredients = recipe.Ingredients;
 
-            _context.Recipes.Add(recipeDb);
+            await _context.Recipes.AddAsync(recipeDb);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("PostRecipes", new { id = recipeDb.RecipeId }, recipe);
+            return Ok();
         }
 
-        private void Save(string path, string imageString)
+        private async Task SaveImage(string path, IFormFile image)
         {
             try
             {
-
-                //path = @"D:\Projects\AllInOne\Cook-Book\Cook-Book-API\wwwroot\images\kot.jpeg";
-
-                var imageDataByteArray = Convert.FromBase64String(imageString);
-                var imageDataStream = new MemoryStream(imageDataByteArray);
-                imageDataStream.Position = 0;
-
-                //using (FileStream file = new FileStream(path, FileMode.Create, System.IO.FileAccess.Write))
-                //{
-                //    byte[] bytes = new byte[imageDataStream.Length];
-                //    imageDataStream.Read(bytes, 0, (int)imageDataStream.Length);
-                //    file.Write(bytes, 0, bytes.Length);
-                //    imageDataStream.Close();
-                //}
-
-                //using (FileStream file = new FileStream(path, FileMode.Create, System.IO.FileAccess.Write))
-                //    imageDataStream.CopyTo(file);
-
-                System.IO.File.WriteAllBytes(path, imageDataByteArray);
-
+                if (image.Length > 0)
+                {
+                    using (var fileStream = new FileStream(path, FileMode.Create))
+                    {
+                        await image.CopyToAsync(fileStream);
+                    }
+                }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
-                Console.WriteLine(ex.Message);
+                throw;
             }
-
-          
         }
 
         // DELETE: api/Recipes/5
@@ -197,9 +168,9 @@ namespace Cook_Book_API.Controllers
         {
             List<Recipe> output = new List<Recipe>();
 
-            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
+            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             output = _context.Recipes.Where(x => x.UserId == UserId).ToList();
-            
+
             return output;
         }
     }

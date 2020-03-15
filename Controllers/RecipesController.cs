@@ -89,7 +89,7 @@ namespace Cook_Book_API.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<RecipeAPIModel>> PostRecipes([FromForm]RecipeAPIModel recipe)
+        public async Task<ActionResult<RecipeAPIModel>> PostRecipes(RecipeAPIModel recipe)
         {
             Recipe recipeDb = new Recipe();
 
@@ -97,22 +97,35 @@ namespace Cook_Book_API.Controllers
 
             if (recipe.Image != null)
             {
-                var filename = Guid.NewGuid();
+
+
+               // var filename = file.FileName;
+               // var imagesPhotoPath = ConfigurationManager.AppSetting["ProductsImagePath"];
+               // var rootFolderPath = _environment.WebRootPath;
+               //var relativePath = imagesPhotoPath + filename;
+              //  var path = rootFolderPath + relativePath;
+
+                var filename = Guid.NewGuid() + ".jpeg";
                 var imagesPhotoPath = _config["ImagePath"];
-                var rootFolderPath = _hostEnvironment.ContentRootPath;
-                var relativePath = imagesPhotoPath + filename;
+                var rootFolderPath = _hostEnvironment.ContentRootPath + "\\wwwroot";
+                var relativePath = imagesPhotoPath + filename ;
                 var path = rootFolderPath + relativePath;
+
+
+                Save(path, recipe.Image);
 
                 using (var photoFile = new FileStream(path, FileMode.Create))
                 {
-                    recipe.Image.CopyTo(photoFile);
+                    //recipe.Image.CopyTo(photoFile);
                 }
 
                 recipeDb.UserId = UserId;
-                recipeDb.NameOfImage = recipe.Image.FileName;
+                recipeDb.NameOfImage = filename.ToString();
                 recipeDb.Name = recipe.Name;
                 recipeDb.Instruction = recipe.Instruction;
                 recipeDb.Ingredients = recipe.Ingredients;
+
+          
             }
 
 
@@ -120,6 +133,40 @@ namespace Cook_Book_API.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("PostRecipes", new { id = recipeDb.RecipeId }, recipe);
+        }
+
+        private void Save(string path, string imageString)
+        {
+            try
+            {
+
+                //path = @"D:\Projects\AllInOne\Cook-Book\Cook-Book-API\wwwroot\images\kot.jpeg";
+
+                var imageDataByteArray = Convert.FromBase64String(imageString);
+                var imageDataStream = new MemoryStream(imageDataByteArray);
+                imageDataStream.Position = 0;
+
+                //using (FileStream file = new FileStream(path, FileMode.Create, System.IO.FileAccess.Write))
+                //{
+                //    byte[] bytes = new byte[imageDataStream.Length];
+                //    imageDataStream.Read(bytes, 0, (int)imageDataStream.Length);
+                //    file.Write(bytes, 0, bytes.Length);
+                //    imageDataStream.Close();
+                //}
+
+                //using (FileStream file = new FileStream(path, FileMode.Create, System.IO.FileAccess.Write))
+                //    imageDataStream.CopyTo(file);
+
+                System.IO.File.WriteAllBytes(path, imageDataByteArray);
+
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+
+          
         }
 
         // DELETE: api/Recipes/5

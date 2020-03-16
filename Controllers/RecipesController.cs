@@ -57,12 +57,15 @@ namespace Cook_Book_API.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRecipes(int id, Recipe recipes)
+        public async Task<IActionResult> PutRecipes(int id, [FromForm]Recipe recipes)
         {
             if (id != recipes.RecipeId)
             {
                 return BadRequest();
             }
+
+            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            recipes.UserId = UserId;
 
             _context.Entry(recipes).State = EntityState.Modified;
 
@@ -82,7 +85,7 @@ namespace Cook_Book_API.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/Recipes

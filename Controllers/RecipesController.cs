@@ -16,7 +16,7 @@ using Cook_Book_API.Models;
 
 namespace Cook_Book_API.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RecipesController : ControllerBase
@@ -175,6 +175,30 @@ namespace Cook_Book_API.Controllers
             output = _context.Recipes.Where(x => x.UserId == UserId).ToList();
 
             return output;
+        }
+
+        //GET /api/Recipes/GetPhoto/ghghhgghghghg
+        [HttpGet]
+        [Route("GetPhoto/{id}")]
+        public IActionResult GetPhoto(string id)
+        {
+            //Znajdz foto
+            string photoName = _context.Recipes.Where(x => x.NameOfImage == id).Select(y => y.NameOfImage).FirstOrDefault();
+
+            if(!string.IsNullOrEmpty(photoName))
+            {
+
+                var imagesPhotoPath = _config["ImagePath"];
+                var rootFolderPath = _hostEnvironment.ContentRootPath + "\\wwwroot";
+                var relativePath = imagesPhotoPath + photoName;
+                var path = rootFolderPath + relativePath;
+
+                var stream = new FileStream(path, FileMode.Open);
+                return File(stream, "image/jpeg", photoName);
+            }
+
+            return NotFound();
+           
         }
     }
 }

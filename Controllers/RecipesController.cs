@@ -143,9 +143,32 @@ namespace Cook_Book_API.Controllers
             }
         }
 
+        private void DeleteImage(string nameOfImage)
+        {
+            try
+            {
+                var imagesPhotoPath = _config["ImagePath"];
+                var rootFolderPath = _hostEnvironment.ContentRootPath + "\\wwwroot";
+                var relativePath = imagesPhotoPath + nameOfImage;
+                var path = rootFolderPath + relativePath;
+
+                if ((System.IO.File.Exists(path)))
+                {
+                    System.IO.File.Delete(path);
+                }
+            }
+
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+
         // DELETE: api/Recipes/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Recipe>> DeleteRecipes(int id)
+        public async Task<ActionResult> DeleteRecipes(int id)
         {
             var recipes = await _context.Recipes.FindAsync(id);
             if (recipes == null)
@@ -156,9 +179,16 @@ namespace Cook_Book_API.Controllers
             _context.Recipes.Remove(recipes);
             await _context.SaveChangesAsync();
 
-            return recipes;
+            if(recipes.NameOfImage!=null)
+            {
+                DeleteImage(recipes.NameOfImage);
+            }
+
+
+            return Ok();
         }
 
+  
         private bool RecipesExists(int id)
         {
             return _context.Recipes.Any(e => e.RecipeId == id);

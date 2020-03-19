@@ -57,17 +57,55 @@ namespace Cook_Book_API.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRecipes(int id, [FromForm]Recipe recipes)
+        public async Task<IActionResult> PutRecipes(int id, [FromForm]RecipeAPIModel recipe)
         {
-            if (id != recipes.RecipeId)
+
+            if (id.ToString() != recipe.RecipeId)
             {
                 return BadRequest();
             }
 
-            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            recipes.UserId = UserId;
+            //Recipe recipeDb = new Recipe();
 
-            _context.Entry(recipes).State = EntityState.Modified;
+            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var oldRecipe = _context.Recipes.Where(x => x.RecipeId.ToString() == recipe.RecipeId).FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(recipe.NameOfImage))
+            {
+                if (recipe.NameOfImage != oldRecipe.NameOfImage)
+                {
+                    //Usun stare zdjecie - Jest nowe
+                    DeleteImage(oldRecipe.NameOfImage);
+                }
+
+                var filename = Guid.NewGuid() + ".jpeg";
+                var imagesPhotoPath = _config["ImagePath"];
+                var rootFolderPath = _hostEnvironment.ContentRootPath + "\\wwwroot";
+                var relativePath = imagesPhotoPath + filename;
+                var path = rootFolderPath + relativePath;
+                await SaveImage(path, recipe.Image);
+
+
+                oldRecipe.NameOfImage = filename.ToString();
+
+            }
+
+            if (string.IsNullOrEmpty(recipe.NameOfImage) && oldRecipe.NameOfImage != null)
+            {
+                //Usun stare zdjecie - Usunieto je
+                DeleteImage(oldRecipe.NameOfImage);
+                oldRecipe.NameOfImage = null;
+            }
+
+            oldRecipe.RecipeId = id;
+            oldRecipe.UserId = UserId;
+            oldRecipe.Name = recipe.Name;
+            oldRecipe.Instruction = recipe.Instruction;
+            oldRecipe.Ingredients = recipe.Ingredients;
+
+            _context.Entry(oldRecipe).State = EntityState.Modified;
+            //_context.Recipes.Update(oldRecipe);
 
             try
             {
@@ -179,7 +217,7 @@ namespace Cook_Book_API.Controllers
             _context.Recipes.Remove(recipes);
             await _context.SaveChangesAsync();
 
-            if(recipes.NameOfImage!=null)
+            if (recipes.NameOfImage != null)
             {
                 DeleteImage(recipes.NameOfImage);
             }
@@ -188,7 +226,7 @@ namespace Cook_Book_API.Controllers
             return Ok();
         }
 
-  
+
         private bool RecipesExists(int id)
         {
             return _context.Recipes.Any(e => e.RecipeId == id);
@@ -215,7 +253,7 @@ namespace Cook_Book_API.Controllers
             //Znajdz foto
             string photoName = _context.Recipes.Where(x => x.NameOfImage == id).Select(y => y.NameOfImage).FirstOrDefault();
 
-            if(!string.IsNullOrEmpty(photoName))
+            if (!string.IsNullOrEmpty(photoName))
             {
 
                 var imagesPhotoPath = _config["ImagePath"];
@@ -228,7 +266,7 @@ namespace Cook_Book_API.Controllers
             }
 
             return NotFound();
-           
+
         }
     }
 }

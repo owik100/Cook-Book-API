@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using Cook_Book_API.Helpers;
 
 namespace Cook_Book_API
 {
@@ -42,10 +43,7 @@ namespace Cook_Book_API
 
                 options.Password.RequireUppercase = false;
                 options.Password.RequireNonAlphanumeric = false;
-            }
-                
-
-                )
+            })
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
@@ -102,10 +100,9 @@ namespace Cook_Book_API
                         new List<string>()
                       }
                     });
-                //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                //c.IncludeXmlComments(xmlPath);
             });
+
+            services.AddSingleton<IImageHelper, ImageHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

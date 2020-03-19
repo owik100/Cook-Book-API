@@ -36,7 +36,7 @@ namespace Cook_Book_API.Controllers
             _logger = logger;
         }
 
-        //  /api/Account/register
+        //POST /api/Account/register
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]RegisterModel model)
@@ -47,20 +47,18 @@ namespace Cook_Book_API.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    //_logger.LogInformation("User created a new account with password.");
+                    _logger.LogInformation($"User created. Username: {model.UserName} Email: {model.Email}");
                     return Ok();
                 }
                 else
                 {
+                    _logger.LogWarning($"Cannot create new User: {string.Join("\n", result.Errors.Select(x => x.Description))}");
                     return BadRequest(new { message = string.Join("\n", result.Errors.Select(x => x.Description))});
                 }
             }
             catch (Exception ex)
             {
-                if(ex.Message == "Sequence contains more than one element")
-                {
-                    return BadRequest(new { message = "Podany adres email już istnieje!" });
-                }
+                _logger.LogError(ex, "Got exception.");
                 return BadRequest(new { message = ex.Message });
             }
         }

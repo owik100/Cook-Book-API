@@ -19,29 +19,34 @@ namespace Cook_Book_API.Controllers
     public class UserController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger _logger;
 
-
-        public UserController(ApplicationDbContext context)
+        public UserController(ApplicationDbContext context, ILogger<UserController> logger)
         {
             _context = context;
-
+            _logger = logger;
         }
 
         [HttpGet]
         //GET api/User/
-        public ApplicationUser GetById()
+        public ApplicationUser GetUserInfo()
         {
             ApplicationUser output = new ApplicationUser();
 
+            try
+            {
+                //Znajdź "zalogowanego" usera (token) po ID.
+                string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = _context.Users.Find(userId);
 
-            //Znajdź "zalogowanego" usera (token) po ID.
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var user = _context.Users.Find(userId);
-
-            output.Email = user.Email;
-            output.Id = user.Id;
-            output.UserName = user.UserName;
+                output.Email = user.Email;
+                output.Id = user.Id;
+                output.UserName = user.UserName;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception.");
+            }
 
             return output;
         }

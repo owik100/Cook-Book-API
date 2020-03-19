@@ -13,10 +13,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.IO;
 using Cook_Book_API.Models;
+using Microsoft.Extensions.Logging;
+using Cook_Book_API.Helpers;
 
 namespace Cook_Book_API.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RecipesController : ControllerBase
@@ -24,106 +26,39 @@ namespace Cook_Book_API.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
         private readonly IHostEnvironment _hostEnvironment;
+        private readonly ILogger _logger;
+        private readonly IImageHelper _imageHelper;
 
-        public RecipesController(ApplicationDbContext context, IConfiguration config, IHostEnvironment hostEnvironment)
+        public RecipesController(ApplicationDbContext context, IConfiguration config, IHostEnvironment hostEnvironment, 
+            ILogger<RecipesController> logger, IImageHelper imageHelper)
         {
             _context = context;
             _config = config;
             _hostEnvironment = hostEnvironment;
+            _logger = logger;
+            _imageHelper = imageHelper;
         }
 
-        // GET: api/Recipes
+        //GET /api/Recipes/CurrentUserRecipes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetProducts()
+        [Route("CurrentUserRecipes")]
+        public ActionResult<List<Recipe>> GetUserRecipes()
         {
-            return await _context.Recipes.ToListAsync();
-        }
-
-        // GET: api/Recipes/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Recipe>> GetRecipes(int id)
-        {
-            var recipes = await _context.Recipes.FindAsync(id);
-
-            if (recipes == null)
-            {
-                return NotFound();
-            }
-
-            return recipes;
-        }
-
-        // PUT: api/Recipes/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutRecipes(int id, [FromForm]RecipeAPIModel recipe)
-        {
-
-            if (id.ToString() != recipe.RecipeId)
-            {
-                return BadRequest();
-            }
-
-            //Recipe recipeDb = new Recipe();
-
-            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var oldRecipe = _context.Recipes.Where(x => x.RecipeId.ToString() == recipe.RecipeId).FirstOrDefault();
-
-            if (!string.IsNullOrEmpty(recipe.NameOfImage))
-            {
-                if (recipe.NameOfImage != oldRecipe.NameOfImage)
-                {
-                    //Usun stare zdjecie - Jest nowe
-                    DeleteImage(oldRecipe.NameOfImage);
-                }
-
-                var filename = Guid.NewGuid() + ".jpeg";
-                var imagesPhotoPath = _config["ImagePath"];
-                var rootFolderPath = _hostEnvironment.ContentRootPath + "\\wwwroot";
-                var relativePath = imagesPhotoPath + filename;
-                var path = rootFolderPath + relativePath;
-                await SaveImage(path, recipe.Image);
-
-
-                oldRecipe.NameOfImage = filename.ToString();
-
-            }
-
-            if (string.IsNullOrEmpty(recipe.NameOfImage) && oldRecipe.NameOfImage != null)
-            {
-                //Usun stare zdjecie - Usunieto je
-                DeleteImage(oldRecipe.NameOfImage);
-                oldRecipe.NameOfImage = null;
-            }
-
-            oldRecipe.RecipeId = id;
-            oldRecipe.UserId = UserId;
-            oldRecipe.Name = recipe.Name;
-            oldRecipe.Instruction = recipe.Instruction;
-            oldRecipe.Ingredients = recipe.Ingredients;
-
-            _context.Entry(oldRecipe).State = EntityState.Modified;
-            //_context.Recipes.Update(oldRecipe);
+            List<Recipe> output = new List<Recipe>();
 
             try
             {
-                await _context.SaveChangesAsync();
+                string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                output = _context.Recipes.Where(x => x.UserId == UserId).ToList();
+                _logger.LogInformation($"User Id: {UserId} downloaded all his recipes");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!RecipesExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                _logger.LogError(ex, "Got exception.");
+                throw;
             }
 
-            return Ok();
+            return output;
         }
 
         // POST: api/Recipes
@@ -132,35 +67,177 @@ namespace Cook_Book_API.Controllers
         [HttpPost]
         public async Task<ActionResult<RecipeAPIModel>> PostRecipes([FromForm]RecipeAPIModel recipe)
         {
-
-            // var form = Request.Form;
             Recipe recipeDb = new Recipe();
-
-            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (recipe.Image != null)
+            try
             {
-                var filename = Guid.NewGuid() + ".jpeg";
-                var imagesPhotoPath = _config["ImagePath"];
-                var rootFolderPath = _hostEnvironment.ContentRootPath + "\\wwwroot";
-                var relativePath = imagesPhotoPath + filename;
-                var path = rootFolderPath + relativePath;
-                await SaveImage(path, recipe.Image);
+                string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+                if (recipe.Image != null)
+                {
+                    var filename = Guid.NewGuid() + ".jpeg";
+                    string path = _imageHelper.GetImagePath(filename);
+                    await SaveImage(path, recipe.Image);
 
-                recipeDb.NameOfImage = filename.ToString();
+                    recipeDb.NameOfImage = filename.ToString();
+                }
 
+                recipeDb.UserId = UserId;
+                recipeDb.Name = recipe.Name;
+                recipeDb.Instruction = recipe.Instruction;
+                recipeDb.Ingredients = recipe.Ingredients;
+
+                await _context.Recipes.AddAsync(recipeDb);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception.");
+                throw;
             }
 
-            recipeDb.UserId = UserId;
-            recipeDb.Name = recipe.Name;
-            recipeDb.Instruction = recipe.Instruction;
-            recipeDb.Ingredients = recipe.Ingredients;
-
-            await _context.Recipes.AddAsync(recipeDb);
-            await _context.SaveChangesAsync();
-
+            _logger.LogInformation($"Recipe posted");
             return Ok();
+        }
+
+        // PUT: api/Recipes/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
+        // more details see https://aka.ms/RazorPagesCRUD.
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutRecipes(int id, [FromForm]RecipeAPIModel recipe)
+        {
+            try
+            {
+                if (id.ToString() != recipe.RecipeId)
+                {
+                    _logger.LogError($"Recipe: {id} not found");
+                    return BadRequest();
+                }
+
+                string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var oldRecipe = _context.Recipes.Where(x => x.RecipeId.ToString() == recipe.RecipeId).FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(recipe.NameOfImage))
+                {
+                    if (recipe.NameOfImage != oldRecipe.NameOfImage)
+                    {
+                        //Usun stare zdjecie - Jest nowe
+                        DeleteImage(oldRecipe.NameOfImage);
+                    }
+
+                    var filename = Guid.NewGuid() + ".jpeg";
+                    string path = _imageHelper.GetImagePath(filename);
+                    await SaveImage(path, recipe.Image);
+
+                    oldRecipe.NameOfImage = filename.ToString();
+
+                }
+
+                if (string.IsNullOrEmpty(recipe.NameOfImage) && oldRecipe.NameOfImage != null)
+                {
+                    //Usun stare zdjecie - Usunieto je
+                    DeleteImage(oldRecipe.NameOfImage);
+                    oldRecipe.NameOfImage = null;
+                }
+
+                oldRecipe.RecipeId = id;
+                oldRecipe.UserId = UserId;
+                oldRecipe.Name = recipe.Name;
+                oldRecipe.Instruction = recipe.Instruction;
+                oldRecipe.Ingredients = recipe.Ingredients;
+
+                _context.Entry(oldRecipe).State = EntityState.Modified;
+                //_context.Recipes.Update(oldRecipe);
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    if (!RecipesExists(id))
+                    {
+                        _logger.LogError(ex, "Got exception.");
+                        return NotFound();
+                    }
+                    else
+                    {
+                        _logger.LogError(ex, "Got exception.");
+                        throw;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception.");
+                throw;
+            }
+
+            _logger.LogInformation($"Recipe Id: {recipe.RecipeId} updated");
+            return Ok();
+        }
+
+        // DELETE: api/Recipes/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteRecipes(int id)
+        {
+            try
+            {
+                var recipes = await _context.Recipes.FindAsync(id);
+                if (recipes == null)
+                {
+                    _logger.LogError($"Not found recipe: {id}");
+                    return NotFound();
+                }
+
+                _context.Recipes.Remove(recipes);
+                await _context.SaveChangesAsync();
+
+                if (recipes.NameOfImage != null)
+                {
+                    DeleteImage(recipes.NameOfImage);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception.");
+                throw;
+            }
+
+            _logger.LogInformation($"Recipe: {id} deleted");
+            return Ok();
+        }
+
+        //GET /api/Recipes/GetPhoto/abc15
+        [HttpGet]
+        [Route("GetPhoto/{id}")]
+        public IActionResult GetPhoto(string id)
+        {
+            try
+            {
+                //Znajdz foto
+                string photoName = _context.Recipes.Where(x => x.NameOfImage == id).Select(y => y.NameOfImage).FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(photoName))
+                {
+
+                    string path = _imageHelper.GetImagePath(id);
+
+                    var stream = new FileStream(path, FileMode.Open);
+                    return File(stream, "image/jpeg", photoName);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception.");
+                throw;
+            }
+
+            _logger.LogError($"Not found image: {id}");
+            return NotFound();
+
         }
 
         private async Task SaveImage(string path, IFormFile image)
@@ -175,8 +252,9 @@ namespace Cook_Book_API.Controllers
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Got exception.");
                 throw;
             }
         }
@@ -185,10 +263,7 @@ namespace Cook_Book_API.Controllers
         {
             try
             {
-                var imagesPhotoPath = _config["ImagePath"];
-                var rootFolderPath = _hostEnvironment.ContentRootPath + "\\wwwroot";
-                var relativePath = imagesPhotoPath + nameOfImage;
-                var path = rootFolderPath + relativePath;
+                string path = _imageHelper.GetImagePath(nameOfImage);
 
                 if ((System.IO.File.Exists(path)))
                 {
@@ -196,78 +271,40 @@ namespace Cook_Book_API.Controllers
                 }
             }
 
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Got exception.");
                 throw;
             }
         }
-
-
-        // DELETE: api/Recipes/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteRecipes(int id)
-        {
-            var recipes = await _context.Recipes.FindAsync(id);
-            if (recipes == null)
-            {
-                return NotFound();
-            }
-
-            _context.Recipes.Remove(recipes);
-            await _context.SaveChangesAsync();
-
-            if (recipes.NameOfImage != null)
-            {
-                DeleteImage(recipes.NameOfImage);
-            }
-
-
-            return Ok();
-        }
-
 
         private bool RecipesExists(int id)
         {
             return _context.Recipes.Any(e => e.RecipeId == id);
         }
 
-        [HttpGet]
-        [Route("CurrentUserRecipes")]
-        //GET /api/Recipes/CurrentUserRecipes
-        public List<Recipe> GetUserRecipes()
-        {
-            List<Recipe> output = new List<Recipe>();
+        #region Unused
+        //// GET: api/Recipes
+        //[HttpGet]
+        //public async Task<ActionResult<IEnumerable<Recipe>>> GetProducts()
+        //{
+        //    return await _context.Recipes.ToListAsync();
+        //}
 
-            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            output = _context.Recipes.Where(x => x.UserId == UserId).ToList();
+        //// GET: api/Recipes/5
+        //[HttpGet("{id}")]
+        //public async Task<ActionResult<Recipe>> GetRecipes(int id)
+        //{
+        //    var recipes = await _context.Recipes.FindAsync(id);
 
-            return output;
-        }
+        //    if (recipes == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-        //GET /api/Recipes/GetPhoto/ghghhgghghghg
-        [HttpGet]
-        [Route("GetPhoto/{id}")]
-        public IActionResult GetPhoto(string id)
-        {
-            //Znajdz foto
-            string photoName = _context.Recipes.Where(x => x.NameOfImage == id).Select(y => y.NameOfImage).FirstOrDefault();
-
-            if (!string.IsNullOrEmpty(photoName))
-            {
-
-                var imagesPhotoPath = _config["ImagePath"];
-                var rootFolderPath = _hostEnvironment.ContentRootPath + "\\wwwroot";
-                var relativePath = imagesPhotoPath + photoName;
-                var path = rootFolderPath + relativePath;
-
-                var stream = new FileStream(path, FileMode.Open);
-                return File(stream, "image/jpeg", photoName);
-            }
-
-            return NotFound();
-
-        }
+        //    return recipes;
+        //}
+        #endregion
     }
 }
 

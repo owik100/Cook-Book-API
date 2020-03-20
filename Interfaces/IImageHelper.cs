@@ -1,4 +1,4 @@
-﻿namespace Cook_Book_API.Helpers
+﻿namespace Cook_Book_API.Interfaces
 {
     public interface IImageHelper
     {

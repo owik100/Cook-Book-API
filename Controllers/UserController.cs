@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Cook_Book_API.Data;
 using Cook_Book_API.Data.DbModels;
+using Cook_Book_API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -29,9 +30,9 @@ namespace Cook_Book_API.Controllers
 
         [HttpGet]
         //GET api/User/
-        public ApplicationUser GetUserInfo()
+        public LoggedUserModel GetUserInfo()
         {
-            ApplicationUser output = new ApplicationUser();
+            LoggedUserModel output = new LoggedUserModel();
 
             try
             {

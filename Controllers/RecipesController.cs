@@ -42,14 +42,26 @@ namespace Cook_Book_API.Controllers
         //GET /api/Recipes/CurrentUserRecipes
         [HttpGet]
         [Route("CurrentUserRecipes")]
-        public ActionResult<List<Recipe>> GetUserRecipes()
+        public ActionResult<List<RecipeAPIModel>> GetUserRecipes()
         {
-            List<Recipe> output = new List<Recipe>();
+            List<RecipeAPIModel> output = new List<RecipeAPIModel>();
 
             try
             {
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                output = _context.Recipes.Where(x => x.UserId == UserId).ToList();
+                var recipesDB = _context.Recipes.Where(x => x.UserId == UserId).ToList();
+
+                foreach (var item in recipesDB)
+                {
+                    output.Add(new RecipeAPIModel
+                    {
+                        RecipeId = item.RecipeId.ToString(),
+                        Name = item.Name,
+                        NameOfImage = item.NameOfImage,
+                        Ingredients = item.Ingredients,
+                        Instruction = item.Instruction
+                    });
+                }
             }
             catch (Exception ex)
             {

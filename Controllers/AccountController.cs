@@ -52,7 +52,6 @@ namespace Cook_Book_API.Controllers
                 }
                 else
                 {
-                    _logger.LogWarning($"Cannot create new User: {string.Join("\n", result.Errors.Select(x => x.Description))}");
                     return BadRequest(new { message = string.Join("\n", result.Errors.Select(x => x.Description))});
                 }
             }

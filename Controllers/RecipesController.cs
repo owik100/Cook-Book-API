@@ -50,7 +50,6 @@ namespace Cook_Book_API.Controllers
             {
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 output = _context.Recipes.Where(x => x.UserId == UserId).ToList();
-                _logger.LogInformation($"User Id: {UserId} downloaded all his recipes");
             }
             catch (Exception ex)
             {
@@ -95,7 +94,6 @@ namespace Cook_Book_API.Controllers
                 throw;
             }
 
-            _logger.LogInformation($"Recipe posted");
             return Ok();
         }
 
@@ -109,7 +107,7 @@ namespace Cook_Book_API.Controllers
             {
                 if (id.ToString() != recipe.RecipeId)
                 {
-                    _logger.LogError($"Recipe: {id} not found");
+                    _logger.LogWarning($"Recipe: {id} not found");
                     return BadRequest();
                 }
 
@@ -173,7 +171,6 @@ namespace Cook_Book_API.Controllers
                 throw;
             }
 
-            _logger.LogInformation($"Recipe Id: {recipe.RecipeId} updated");
             return Ok();
         }
 
@@ -186,7 +183,7 @@ namespace Cook_Book_API.Controllers
                 var recipes = await _context.Recipes.FindAsync(id);
                 if (recipes == null)
                 {
-                    _logger.LogError($"Not found recipe: {id}");
+                    _logger.LogWarning($"Not found recipe: {id}");
                     return NotFound();
                 }
 
@@ -205,7 +202,6 @@ namespace Cook_Book_API.Controllers
                 throw;
             }
 
-            _logger.LogInformation($"Recipe: {id} deleted");
             return Ok();
         }
 
@@ -235,7 +231,7 @@ namespace Cook_Book_API.Controllers
                 throw;
             }
 
-            _logger.LogError($"Not found image: {id}");
+            _logger.LogWarning($"Not found image: {id}");
             return NotFound();
 
         }

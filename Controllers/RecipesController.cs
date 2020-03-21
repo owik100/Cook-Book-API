@@ -24,17 +24,12 @@ namespace Cook_Book_API.Controllers
     public class RecipesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _config;
-        private readonly IHostEnvironment _hostEnvironment;
         private readonly ILogger _logger;
         private readonly IImageHelper _imageHelper;
 
-        public RecipesController(ApplicationDbContext context, IConfiguration config, IHostEnvironment hostEnvironment, 
-            ILogger<RecipesController> logger, IImageHelper imageHelper)
+        public RecipesController(ApplicationDbContext context, ILogger<RecipesController> logger, IImageHelper imageHelper)
         {
             _context = context;
-            _config = config;
-            _hostEnvironment = hostEnvironment;
             _logger = logger;
             _imageHelper = imageHelper;
         }

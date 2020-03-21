@@ -17,15 +17,13 @@ namespace Cook_Book_API.Controllers
 {
     public class TokenController : Controller
     {
-        private ApplicationDbContext _context;
         private UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _config;
         private readonly ILogger _logger;
         private IdentityUser _user;
 
-        public TokenController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IConfiguration config, ILogger<TokenController> logger)
+        public TokenController(UserManager<IdentityUser> userManager, IConfiguration config, ILogger<TokenController> logger)
         {
-            _context = context;
             _userManager = userManager;
             _config = config;
             _logger = logger;

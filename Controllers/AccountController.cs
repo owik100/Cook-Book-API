@@ -20,19 +20,12 @@ namespace Cook_Book_API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
 
         public AccountController(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            IEmailSender emailSender,
-            ILogger<AccountController> logger)
+            UserManager<IdentityUser> userManager, ILogger<AccountController> logger)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
-            _emailSender = emailSender;
             _logger = logger;
         }
 

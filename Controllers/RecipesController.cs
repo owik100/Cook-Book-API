@@ -80,7 +80,8 @@ namespace Cook_Book_API.Controllers
 
                 if (recipe.Image != null)
                 {
-                    var filename = Guid.NewGuid() + ".jpeg";
+                    var extension = Path.GetExtension(recipe.Image.FileName);
+                    var filename = Guid.NewGuid() + extension;
                     string path = _imageHelper.GetImagePath(filename);
                     await SaveImage(path, recipe.Image);
 
@@ -130,7 +131,8 @@ namespace Cook_Book_API.Controllers
                         DeleteImage(oldRecipe.NameOfImage);
                     }
 
-                    var filename = Guid.NewGuid() + ".jpeg";
+                    var extension = Path.GetExtension(recipe.Image.FileName);
+                    var filename = Guid.NewGuid() + extension;
                     string path = _imageHelper.GetImagePath(filename);
                     await SaveImage(path, recipe.Image);
 

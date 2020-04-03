@@ -36,8 +36,10 @@ namespace Cook_Book_API.Controllers
 
         // GET: api/Recipes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Recipe>> GetRecipes(int id)
+        public async Task<ActionResult<RecipeAPIModel>> GetRecipes(int id)
         {
+
+            var output = new RecipeAPIModel();
             string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var recipes = await _context.Recipes.FindAsync(id);
 
@@ -51,7 +53,14 @@ namespace Cook_Book_API.Controllers
                 return NotFound();
             }
 
-            return recipes;
+            output.RecipeId = recipes.RecipeId.ToString();
+            output.Name = recipes.Name;
+            output.NameOfImage = recipes.NameOfImage;
+            output.Ingredients = recipes.Ingredients;
+            output.Instruction = recipes.Instruction;
+
+
+            return output;
         }
 
         //GET /api/Recipes/CurrentUserRecipes

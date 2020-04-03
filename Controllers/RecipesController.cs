@@ -34,6 +34,26 @@ namespace Cook_Book_API.Controllers
             _imageHelper = imageHelper;
         }
 
+        // GET: api/Recipes/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Recipe>> GetRecipes(int id)
+        {
+            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var recipes = await _context.Recipes.FindAsync(id);
+
+            if (recipes == null)
+            {
+                return NotFound();
+            }
+
+           else if (recipes.UserId != UserId)
+            {
+                return NotFound();
+            }
+
+            return recipes;
+        }
+
         //GET /api/Recipes/CurrentUserRecipes
         [HttpGet]
         [Route("CurrentUserRecipes")]
@@ -294,20 +314,6 @@ namespace Cook_Book_API.Controllers
         //public async Task<ActionResult<IEnumerable<Recipe>>> GetProducts()
         //{
         //    return await _context.Recipes.ToListAsync();
-        //}
-
-        //// GET: api/Recipes/5
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<Recipe>> GetRecipes(int id)
-        //{
-        //    var recipes = await _context.Recipes.FindAsync(id);
-
-        //    if (recipes == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return recipes;
         //}
         #endregion
     }

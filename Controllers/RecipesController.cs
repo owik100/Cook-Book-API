@@ -158,14 +158,17 @@ namespace Cook_Book_API.Controllers
                     {
                         //Usun stare zdjecie - Jest nowe
                         DeleteImage(oldRecipe.NameOfImage);
+
+
+
+                        var extension = Path.GetExtension(recipe.Image.FileName);
+                        var filename = Guid.NewGuid() + extension;
+                        string path = _imageHelper.GetImagePath(filename);
+                        await SaveImage(path, recipe.Image);
+
+                        oldRecipe.NameOfImage = filename.ToString();
                     }
 
-                    var extension = Path.GetExtension(recipe.Image.FileName);
-                    var filename = Guid.NewGuid() + extension;
-                    string path = _imageHelper.GetImagePath(filename);
-                    await SaveImage(path, recipe.Image);
-
-                    oldRecipe.NameOfImage = filename.ToString();
 
                 }
 

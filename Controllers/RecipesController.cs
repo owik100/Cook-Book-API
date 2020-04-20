@@ -58,7 +58,41 @@ namespace Cook_Book_API.Controllers
             output.NameOfImage = recipes.NameOfImage;
             output.Ingredients = recipes.Ingredients;
             output.Instruction = recipes.Instruction;
+            output.IsPublic = recipes.IsPublic;
 
+
+            return output;
+        }
+
+        // GET: api/GetPublicRecipes
+        [Route("GetPublicRecipes")]
+        public  ActionResult<List<RecipeAPIModel>> GetPublicRecipes()
+        {
+
+             List<RecipeAPIModel> output = new List<RecipeAPIModel>();
+
+            try
+            {
+                var recipesDB = _context.Recipes.Where(x => x.IsPublic == true).ToList();
+
+                foreach (var item in recipesDB)
+                {
+                    output.Add(new RecipeAPIModel
+                    {
+                        RecipeId = item.RecipeId.ToString(),
+                        Name = item.Name,
+                        NameOfImage = item.NameOfImage,
+                        Ingredients = item.Ingredients,
+                        Instruction = item.Instruction,
+                        IsPublic = item.IsPublic
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception.");
+                throw;
+            }
 
             return output;
         }
@@ -83,7 +117,8 @@ namespace Cook_Book_API.Controllers
                         Name = item.Name,
                         NameOfImage = item.NameOfImage,
                         Ingredients = item.Ingredients,
-                        Instruction = item.Instruction
+                        Instruction = item.Instruction,
+                        IsPublic = item.IsPublic,
                     });
                 }
             }
@@ -121,6 +156,7 @@ namespace Cook_Book_API.Controllers
                 recipeDb.Name = recipe.Name;
                 recipeDb.Instruction = recipe.Instruction;
                 recipeDb.Ingredients = recipe.Ingredients;
+                recipeDb.IsPublic = recipe.IsPublic;
 
                 await _context.Recipes.AddAsync(recipeDb);
                 await _context.SaveChangesAsync();
@@ -184,6 +220,7 @@ namespace Cook_Book_API.Controllers
                 oldRecipe.Name = recipe.Name;
                 oldRecipe.Instruction = recipe.Instruction;
                 oldRecipe.Ingredients = recipe.Ingredients;
+                oldRecipe.IsPublic = recipe.IsPublic;
 
                 _context.Entry(oldRecipe).State = EntityState.Modified;
                 //_context.Recipes.Update(oldRecipe);

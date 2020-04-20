@@ -13,6 +13,7 @@ namespace Cook_Book_API.Data.DbModels
         public IEnumerable<string> Ingredients { get; set; }
         public string Instruction { get; set; }
         public string NameOfImage { get; set; }
+        public bool  IsPublic { get; set; }
 
 
         [ForeignKey("ApplicationUser")]

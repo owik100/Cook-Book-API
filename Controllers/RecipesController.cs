@@ -38,28 +38,42 @@ namespace Cook_Book_API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<RecipeAPIModel>> GetRecipes(int id)
         {
-
             var output = new RecipeAPIModel();
-            string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var recipes = await _context.Recipes.FindAsync(id);
-
-            if (recipes == null)
+            try
             {
-                return NotFound();
-            }
+                string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var recipes = await _context.Recipes.FindAsync(id);
 
-           else if (recipes.UserId != UserId)
+                if (recipes == null)
+                {
+                    return NotFound();
+                }
+
+                else if (recipes.UserId != UserId)
+                {
+                    return NotFound();
+                }
+
+                output.RecipeId = recipes.RecipeId.ToString();
+                output.Name = recipes.Name;
+                output.NameOfImage = recipes.NameOfImage;
+                output.Ingredients = recipes.Ingredients;
+                output.Instruction = recipes.Instruction;
+                output.IsPublic = recipes.IsPublic;
+
+                string userName =  _context.Users
+                    .Where(x => x.Id == UserId)
+                    .Select(y => y.UserName)
+                    .SingleOrDefault();
+
+
+                output.UserName = userName;
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogError(ex, "Got exception.");
+                throw;
             }
-
-            output.RecipeId = recipes.RecipeId.ToString();
-            output.Name = recipes.Name;
-            output.NameOfImage = recipes.NameOfImage;
-            output.Ingredients = recipes.Ingredients;
-            output.Instruction = recipes.Instruction;
-            output.IsPublic = recipes.IsPublic;
-
 
             return output;
         }
@@ -78,6 +92,12 @@ namespace Cook_Book_API.Controllers
 
                 foreach (var item in recipesDB)
                 {
+
+                     string userName = _context.Users
+                   .Where(x => x.Id == item.UserId)
+                   .Select(y => y.UserName)
+                   .SingleOrDefault();
+             
                     output.Add(new RecipeAPIModel
                     {
                         RecipeId = item.RecipeId.ToString(),
@@ -85,8 +105,10 @@ namespace Cook_Book_API.Controllers
                         NameOfImage = item.NameOfImage,
                         Ingredients = item.Ingredients,
                         Instruction = item.Instruction,
-                        IsPublic = item.IsPublic
-                    });
+                        IsPublic = item.IsPublic,
+
+                        UserName = userName,
+                });
                 }
             }
             catch (Exception ex)
@@ -112,6 +134,12 @@ namespace Cook_Book_API.Controllers
 
                 foreach (var item in recipesDB)
                 {
+
+                    string userName = _context.Users
+                   .Where(x => x.Id == UserId)
+                   .Select(y => y.UserName)
+                   .SingleOrDefault();
+
                     output.Add(new RecipeAPIModel
                     {
                         RecipeId = item.RecipeId.ToString(),
@@ -120,6 +148,8 @@ namespace Cook_Book_API.Controllers
                         Ingredients = item.Ingredients,
                         Instruction = item.Instruction,
                         IsPublic = item.IsPublic,
+
+                        UserName = userName,
                     });
                 }
             }

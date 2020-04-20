@@ -64,7 +64,8 @@ namespace Cook_Book_API.Controllers
             return output;
         }
 
-        // GET: api/GetPublicRecipes
+        // GET: api/Recipes/GetPublicRecipes
+        [HttpGet]
         [Route("GetPublicRecipes")]
         public  ActionResult<List<RecipeAPIModel>> GetPublicRecipes()
         {

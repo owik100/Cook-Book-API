@@ -15,6 +15,7 @@ using System.IO;
 using Cook_Book_API.Models;
 using Microsoft.Extensions.Logging;
 using Cook_Book_API.Interfaces;
+using AutoMapper;
 
 namespace Cook_Book_API.Controllers
 {
@@ -26,17 +27,19 @@ namespace Cook_Book_API.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger _logger;
         private readonly IImageHelper _imageHelper;
+        private readonly IMapper _mapper;
 
-        public RecipesController(ApplicationDbContext context, ILogger<RecipesController> logger, IImageHelper imageHelper)
+        public RecipesController(ApplicationDbContext context, ILogger<RecipesController> logger, IImageHelper imageHelper, IMapper mapper)
         {
             _context = context;
             _logger = logger;
             _imageHelper = imageHelper;
+            _mapper = mapper;
         }
 
         // GET: api/Recipes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<RecipeAPIModel>> GetRecipes(int id)
+        public async Task<ActionResult<RecipeAPIModel>> GetRecipe(int id)
         {
             var output = new RecipeAPIModel();
             try
@@ -54,20 +57,15 @@ namespace Cook_Book_API.Controllers
                     return NotFound();
                 }
 
-                output.RecipeId = recipes.RecipeId.ToString();
-                output.Name = recipes.Name;
-                output.NameOfImage = recipes.NameOfImage;
-                output.Ingredients = recipes.Ingredients;
-                output.Instruction = recipes.Instruction;
-                output.IsPublic = recipes.IsPublic;
+                output = _mapper.Map<RecipeAPIModel>(recipes);
 
-                string userName =  _context.Users
-                    .Where(x => x.Id == UserId)
-                    .Select(y => y.UserName)
-                    .SingleOrDefault();
-
+                string userName = _context.Users
+                   .Where(x => x.Id == UserId)
+                   .Select(y => y.UserName)
+                   .SingleOrDefault();
 
                 output.UserName = userName;
+
             }
             catch (Exception ex)
             {
@@ -93,23 +91,20 @@ namespace Cook_Book_API.Controllers
                 foreach (var item in recipesDB)
                 {
 
-                     string userName = _context.Users
+                    RecipeAPIModel singleRecipeModel = _mapper.Map<RecipeAPIModel>(item);
+
+
+                    string userName = _context.Users
                    .Where(x => x.Id == item.UserId)
                    .Select(y => y.UserName)
                    .SingleOrDefault();
-             
-                    output.Add(new RecipeAPIModel
-                    {
-                        RecipeId = item.RecipeId.ToString(),
-                        Name = item.Name,
-                        NameOfImage = item.NameOfImage,
-                        Ingredients = item.Ingredients,
-                        Instruction = item.Instruction,
-                        IsPublic = item.IsPublic,
 
-                        UserName = userName,
-                });
+                    singleRecipeModel.UserName = userName;
+
+                    output.Add(singleRecipeModel);
+
                 }
+
             }
             catch (Exception ex)
             {
@@ -132,25 +127,19 @@ namespace Cook_Book_API.Controllers
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var recipesDB = _context.Recipes.Where(x => x.UserId == UserId).ToList();
 
+                string userName = _context.Users
+                  .Where(x => x.Id == UserId)
+                  .Select(y => y.UserName)
+                  .SingleOrDefault();
+
                 foreach (var item in recipesDB)
                 {
 
-                    string userName = _context.Users
-                   .Where(x => x.Id == UserId)
-                   .Select(y => y.UserName)
-                   .SingleOrDefault();
+                    RecipeAPIModel singleRecipeModel = _mapper.Map<RecipeAPIModel>(item);
 
-                    output.Add(new RecipeAPIModel
-                    {
-                        RecipeId = item.RecipeId.ToString(),
-                        Name = item.Name,
-                        NameOfImage = item.NameOfImage,
-                        Ingredients = item.Ingredients,
-                        Instruction = item.Instruction,
-                        IsPublic = item.IsPublic,
+                    singleRecipeModel.UserName = userName;
 
-                        UserName = userName,
-                    });
+                    output.Add(singleRecipeModel);
                 }
             }
             catch (Exception ex)
@@ -171,7 +160,11 @@ namespace Cook_Book_API.Controllers
             Recipe recipeDb = new Recipe();
             try
             {
+               
+                recipeDb = _mapper.Map<Recipe>(recipe);
+
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                recipeDb.UserId = UserId;
 
                 if (recipe.Image != null)
                 {
@@ -182,13 +175,7 @@ namespace Cook_Book_API.Controllers
 
                     recipeDb.NameOfImage = filename.ToString();
                 }
-
-                recipeDb.UserId = UserId;
-                recipeDb.Name = recipe.Name;
-                recipeDb.Instruction = recipe.Instruction;
-                recipeDb.Ingredients = recipe.Ingredients;
-                recipeDb.IsPublic = recipe.IsPublic;
-
+                
                 await _context.Recipes.AddAsync(recipeDb);
                 await _context.SaveChangesAsync();
             }

@@ -20,6 +20,7 @@ using System.IO;
 using Cook_Book_API.Helpers;
 using Microsoft.Extensions.Logging;
 using Cook_Book_API.Interfaces;
+using AutoMapper;
 
 namespace Cook_Book_API
 {
@@ -111,6 +112,15 @@ namespace Cook_Book_API
             });
 
             services.AddSingleton<IImageHelper, ImageHelper>();
+
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

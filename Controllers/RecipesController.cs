@@ -45,22 +45,22 @@ namespace Cook_Book_API.Controllers
             try
             {
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var recipes = await _context.Recipes.FindAsync(id);
+                var recipe = await _context.Recipes.FindAsync(id);
 
-                if (recipes == null)
+                if (recipe == null)
                 {
                     return NotFound();
                 }
 
-                else if (recipes.UserId != UserId)
+                else if (recipe.UserId != UserId && !recipe.IsPublic )
                 {
                     return NotFound();
                 }
 
-                output = _mapper.Map<RecipeAPIModel>(recipes);
+                output = _mapper.Map<RecipeAPIModel>(recipe);
 
                 string userName = _context.Users
-                   .Where(x => x.Id == UserId)
+                   .Where(x => x.Id == recipe.UserId)
                    .Select(y => y.UserName)
                    .SingleOrDefault();
 

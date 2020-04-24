@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cook_Book_API.Models
 {
-    public class RecipeAPIModel
+    public class RecipeAPIModel : PaginationModel
     {
         public string RecipeId { get; set; }    
         public string Name { get; set; }

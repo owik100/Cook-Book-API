@@ -78,21 +78,24 @@ namespace Cook_Book_API.Controllers
 
         // GET: api/Recipes/GetPublicRecipes
         [HttpGet]
-        [Route("GetPublicRecipes")]
-        public  ActionResult<List<RecipeAPIModel>> GetPublicRecipes()
+        [Route("GetPublicRecipes/{PageSize}/{PageNumber}")]
+        public  ActionResult<List<RecipeAPIModel>> GetPublicRecipes(int PageSize = 10, int PageNumber = 1)
         {
-
              List<RecipeAPIModel> output = new List<RecipeAPIModel>();
 
             try
             {
-                var recipesDB = _context.Recipes.Where(x => x.IsPublic == true).ToList();
+                int skip = (PageNumber - 1) * PageSize;
+                int take = PageSize;
+                int count = _context.Recipes.Where(x => x.IsPublic == true).Count();
+                int totalPages = CalculateTotalPages(count, PageSize);
+
+                var recipesDB = _context.Recipes.Where(x => x.IsPublic == true).OrderBy(x => x.RecipeId).Skip(skip).Take(take).ToList();
 
                 foreach (var item in recipesDB)
                 {
 
                     RecipeAPIModel singleRecipeModel = _mapper.Map<RecipeAPIModel>(item);
-
 
                     string userName = _context.Users
                    .Where(x => x.Id == item.UserId)
@@ -100,9 +103,10 @@ namespace Cook_Book_API.Controllers
                    .SingleOrDefault();
 
                     singleRecipeModel.UserName = userName;
+                    singleRecipeModel.CurrentPage = PageNumber;
+                    singleRecipeModel.TotalPages = totalPages;
 
                     output.Add(singleRecipeModel);
-
                 }
 
             }
@@ -115,18 +119,24 @@ namespace Cook_Book_API.Controllers
             return output;
         }
 
-        //GET /api/Recipes/CurrentUserRecipes
+        //GET /api/Recipes/CurrentUserRecipes/
         [HttpGet]
-        [Route("CurrentUserRecipes")]
-        public ActionResult<List<RecipeAPIModel>> GetUserRecipes()
+        [Route("CurrentUserRecipes/{PageSize}/{PageNumber}")]
+        public ActionResult<List<RecipeAPIModel>> GetUserRecipes(int PageSize=10, int PageNumber=1)
         {
             List<RecipeAPIModel> output = new List<RecipeAPIModel>();
 
             try
             {
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var recipesDB = _context.Recipes.Where(x => x.UserId == UserId).ToList();
 
+                int skip = (PageNumber - 1) * PageSize;
+                int take = PageSize;
+                int count = _context.Recipes.Where(x => x.UserId == UserId).Count();
+                int totalPages = CalculateTotalPages(count, PageSize);
+
+                var recipesDB = _context.Recipes.Where(x => x.UserId == UserId).OrderBy(x => x.RecipeId).Skip(skip).Take(take).ToList();
+                
                 string userName = _context.Users
                   .Where(x => x.Id == UserId)
                   .Select(y => y.UserName)
@@ -134,10 +144,11 @@ namespace Cook_Book_API.Controllers
 
                 foreach (var item in recipesDB)
                 {
-
                     RecipeAPIModel singleRecipeModel = _mapper.Map<RecipeAPIModel>(item);
 
                     singleRecipeModel.UserName = userName;
+                    singleRecipeModel.CurrentPage = PageNumber;
+                    singleRecipeModel.TotalPages = totalPages;
 
                     output.Add(singleRecipeModel);
                 }
@@ -159,8 +170,7 @@ namespace Cook_Book_API.Controllers
         {
             Recipe recipeDb = new Recipe();
             try
-            {
-               
+            {        
                 recipeDb = _mapper.Map<Recipe>(recipe);
 
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -324,7 +334,7 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
+                //throw;
             }
 
             _logger.LogWarning($"Not found image: {id}");
@@ -373,6 +383,11 @@ namespace Cook_Book_API.Controllers
         private bool RecipesExists(int id)
         {
             return _context.Recipes.Any(e => e.RecipeId == id);
+        }
+
+        private int CalculateTotalPages(int count, int pageSze)
+        {
+            return (int)Math.Ceiling(decimal.Divide(count, pageSze));
         }
 
         #region Unused

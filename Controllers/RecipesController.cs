@@ -130,6 +130,9 @@ namespace Cook_Book_API.Controllers
             {
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+                if (PageNumber <= 0)
+                    PageNumber = 1;
+
                 int skip = (PageNumber - 1) * PageSize;
                 int take = PageSize;
                 int count = _context.Recipes.Where(x => x.UserId == UserId).Count();

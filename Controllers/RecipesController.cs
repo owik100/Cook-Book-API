@@ -39,9 +39,9 @@ namespace Cook_Book_API.Controllers
 
         // GET: api/Recipes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<RecipeAPIModel>> GetRecipe(int id)
+        public async Task<ActionResult<RecipeModel>> GetRecipe(int id)
         {
-            var output = new RecipeAPIModel();
+            var output = new RecipeModel();
             try
             {
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -57,7 +57,7 @@ namespace Cook_Book_API.Controllers
                     return NotFound();
                 }
 
-                output = _mapper.Map<RecipeAPIModel>(recipe);
+                output = _mapper.Map<RecipeModel>(recipe);
 
                 string userName = _context.Users
                    .Where(x => x.Id == recipe.UserId)
@@ -79,9 +79,9 @@ namespace Cook_Book_API.Controllers
         // GET: api/Recipes/GetPublicRecipes
         [HttpGet]
         [Route("GetPublicRecipes/{PageSize}/{PageNumber}")]
-        public  ActionResult<List<RecipeAPIModel>> GetPublicRecipes(int PageSize = 10, int PageNumber = 1)
+        public  ActionResult<List<RecipeModel>> GetPublicRecipes(int PageSize = 10, int PageNumber = 1)
         {
-             List<RecipeAPIModel> output = new List<RecipeAPIModel>();
+             List<RecipeModel> output = new List<RecipeModel>();
 
             try
             {
@@ -95,7 +95,7 @@ namespace Cook_Book_API.Controllers
                 foreach (var item in recipesDB)
                 {
 
-                    RecipeAPIModel singleRecipeModel = _mapper.Map<RecipeAPIModel>(item);
+                    RecipeModel singleRecipeModel = _mapper.Map<RecipeModel>(item);
 
                     string userName = _context.Users
                    .Where(x => x.Id == item.UserId)
@@ -122,9 +122,9 @@ namespace Cook_Book_API.Controllers
         //GET /api/Recipes/CurrentUserRecipes/
         [HttpGet]
         [Route("CurrentUserRecipes/{PageSize}/{PageNumber}")]
-        public ActionResult<List<RecipeAPIModel>> GetUserRecipes(int PageSize=10, int PageNumber=1)
+        public ActionResult<List<RecipeModel>> GetUserRecipes(int PageSize=10, int PageNumber=1)
         {
-            List<RecipeAPIModel> output = new List<RecipeAPIModel>();
+            List<RecipeModel> output = new List<RecipeModel>();
 
             try
             {
@@ -147,7 +147,7 @@ namespace Cook_Book_API.Controllers
 
                 foreach (var item in recipesDB)
                 {
-                    RecipeAPIModel singleRecipeModel = _mapper.Map<RecipeAPIModel>(item);
+                    RecipeModel singleRecipeModel = _mapper.Map<RecipeModel>(item);
 
                     singleRecipeModel.UserName = userName;
                     singleRecipeModel.CurrentPage = PageNumber;
@@ -169,7 +169,7 @@ namespace Cook_Book_API.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<RecipeAPIModel>> PostRecipes([FromForm]RecipeAPIModel recipe)
+        public async Task<ActionResult<RecipeModel>> PostRecipes([FromForm]RecipeModel recipe)
         {
             Recipe recipeDb = new Recipe();
             try
@@ -205,7 +205,7 @@ namespace Cook_Book_API.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRecipes(int id, [FromForm]RecipeAPIModel recipe)
+        public async Task<IActionResult> PutRecipes(int id, [FromForm]RecipeModel recipe)
         {
             try
             {

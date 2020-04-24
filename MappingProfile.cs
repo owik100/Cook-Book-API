@@ -13,8 +13,8 @@ namespace Cook_Book_API
     {
         public MappingProfile()
         {
-            CreateMap<Recipe, RecipeAPIModel>();
-            CreateMap<RecipeAPIModel, Recipe>();
+            CreateMap<Recipe, RecipeModel>();
+            CreateMap<RecipeModel, Recipe>();
             CreateMap<IdentityUser, LoggedUserModel>();
         }
     }

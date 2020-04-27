@@ -15,6 +15,8 @@ namespace Cook_Book_API.Helpers
         private readonly IHostEnvironment _hostEnvironment;
         private readonly ILogger _logger;
 
+        private readonly string[] acceptedExtensions = { ".jpg",".jpeg",".png","gif"};
+
         public ImageHelper(IConfiguration config, IHostEnvironment hostEnvironment, ILogger<ImageHelper> logger)
         {
             _config = config;
@@ -39,6 +41,25 @@ namespace Cook_Book_API.Helpers
                 _logger.LogError(ex, "Got exception.");
                 throw;
             }
+            return output;
+        }
+
+        public bool CheckCorrectExtension(string extension)
+        {
+            bool output = false; 
+            try
+            {
+                if (acceptedExtensions.Any(extension.Contains))
+                {
+                    output = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception.");
+                throw;
+            }
+
             return output;
         }
     }

@@ -3,5 +3,6 @@
     public interface IImageHelper
     {
         string GetImagePath(string imageName);
+        bool CheckCorrectExtension(string extension);
     }
 }

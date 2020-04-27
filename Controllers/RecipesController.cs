@@ -185,11 +185,15 @@ namespace Cook_Book_API.Controllers
                 if (recipe.Image != null)
                 {
                     var extension = Path.GetExtension(recipe.Image.FileName);
-                    var filename = Guid.NewGuid() + extension;
-                    string path = _imageHelper.GetImagePath(filename);
-                    await SaveImage(path, recipe.Image);
 
-                    recipeDb.NameOfImage = filename.ToString();
+                    if (_imageHelper.CheckCorrectExtension(extension)){
+
+                        var filename = Guid.NewGuid() + extension;
+                        string path = _imageHelper.GetImagePath(filename);
+                        await SaveImage(path, recipe.Image);
+
+                        recipeDb.NameOfImage = filename.ToString();
+                    }                 
                 }
                 
                 await _context.Recipes.AddAsync(recipeDb);
@@ -229,16 +233,19 @@ namespace Cook_Book_API.Controllers
                         //Usun stare zdjecie - Jest nowe
                         DeleteImage(oldRecipe.NameOfImage);
 
-
-
                         var extension = Path.GetExtension(recipe.Image.FileName);
-                        var filename = Guid.NewGuid() + extension;
-                        string path = _imageHelper.GetImagePath(filename);
-                        await SaveImage(path, recipe.Image);
 
-                        oldRecipe.NameOfImage = filename.ToString();
+                        if (_imageHelper.CheckCorrectExtension(extension))
+                        {
+
+                            var filename = Guid.NewGuid() + extension;
+                            string path = _imageHelper.GetImagePath(filename);
+                            await SaveImage(path, recipe.Image);
+
+                            oldRecipe.NameOfImage = filename.ToString();
+                        }
+
                     }
-
 
                 }
 

@@ -299,10 +299,18 @@ namespace Cook_Book_API.Controllers
         {
             try
             {
+                string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
                 var recipes = await _context.Recipes.FindAsync(id);
                 if (recipes == null)
                 {
                     _logger.LogWarning($"Not found recipe: {id}");
+                    return NotFound();
+                }
+
+                if(recipes.UserId != UserId)
+                {
+                    _logger.LogWarning($"Can not delete recipe: {id}, Another user.");
                     return NotFound();
                 }
 

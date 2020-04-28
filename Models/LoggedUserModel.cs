@@ -10,5 +10,6 @@ namespace Cook_Book_API.Models
         public string UserName { get; set; }
         public string Email { get; set; }
         public string Id { get; set; }
+        public List<string> FavouriteRecipes { get; set; }
     }
 }

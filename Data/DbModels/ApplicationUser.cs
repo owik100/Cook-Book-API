@@ -9,5 +9,6 @@ namespace Cook_Book_API.Data.DbModels
     public class ApplicationUser : IdentityUser
     {
         public List<Recipe> Recipes { get; set; }
+        public IEnumerable<string> FavouriteRecipes { get; set; }
     }
 }

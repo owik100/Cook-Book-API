@@ -15,7 +15,7 @@ namespace Cook_Book_API
         {
             CreateMap<Recipe, RecipeModel>();
             CreateMap<RecipeModel, Recipe>();
-            CreateMap<IdentityUser, LoggedUserModel>();
+            CreateMap<ApplicationUser, LoggedUserModel>();
         }
     }
 }

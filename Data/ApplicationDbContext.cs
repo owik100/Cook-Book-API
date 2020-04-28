@@ -24,6 +24,7 @@ namespace Cook_Book_API.Data
 
             var splitStringConverter = new ValueConverter<IEnumerable<string>, string>(v => string.Join(";", v), v => v.Split(new[] { ';' }));
             builder.Entity<Recipe>().Property(nameof(Recipe.Ingredients)).HasConversion(splitStringConverter);
+            builder.Entity<ApplicationUser>().Property(nameof(ApplicationUser.FavouriteRecipes)).HasConversion(splitStringConverter);
 
 
             List<Recipe> recipes = new List<Recipe>

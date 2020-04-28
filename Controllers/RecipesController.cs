@@ -203,7 +203,9 @@ namespace Cook_Book_API.Controllers
                     singleRecipeModel.CurrentPage = PageNumber;
                     singleRecipeModel.TotalPages = totalPages;
 
-                    output.Add(singleRecipeModel);
+                    //Check if favourite recipe is our or still public
+                    if(singleRecipeModel.IsPublic || singleRecipeModel.UserName == user.UserName)
+                        output.Add(singleRecipeModel);
                 }
             }
             catch (Exception ex)

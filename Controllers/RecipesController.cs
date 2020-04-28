@@ -52,7 +52,7 @@ namespace Cook_Book_API.Controllers
                     return NotFound();
                 }
 
-                else if (recipe.UserId != UserId && !recipe.IsPublic )
+                else if (recipe.UserId != UserId && !recipe.IsPublic)
                 {
                     return NotFound();
                 }
@@ -79,9 +79,9 @@ namespace Cook_Book_API.Controllers
         // GET: api/Recipes/GetPublicRecipes
         [HttpGet]
         [Route("GetPublicRecipes/{PageSize}/{PageNumber}")]
-        public  ActionResult<List<RecipeModel>> GetPublicRecipes(int PageSize = 10, int PageNumber = 1)
+        public ActionResult<List<RecipeModel>> GetPublicRecipes(int PageSize = 10, int PageNumber = 1)
         {
-             List<RecipeModel> output = new List<RecipeModel>();
+            List<RecipeModel> output = new List<RecipeModel>();
 
             try
             {
@@ -125,7 +125,7 @@ namespace Cook_Book_API.Controllers
         //GET /api/Recipes/CurrentUserRecipes/
         [HttpGet]
         [Route("CurrentUserRecipes/{PageSize}/{PageNumber}")]
-        public ActionResult<List<RecipeModel>> GetUserRecipes(int PageSize=10, int PageNumber=1)
+        public ActionResult<List<RecipeModel>> GetUserRecipes(int PageSize = 10, int PageNumber = 1)
         {
             List<RecipeModel> output = new List<RecipeModel>();
 
@@ -142,7 +142,7 @@ namespace Cook_Book_API.Controllers
                 int totalPages = CalculateTotalPages(count, PageSize);
 
                 var recipesDB = _context.Recipes.Where(x => x.UserId == UserId).OrderBy(x => x.RecipeId).Skip(skip).Take(take).ToList();
-                
+
                 string userName = _context.Users
                   .Where(x => x.Id == UserId)
                   .Select(y => y.UserName)
@@ -168,6 +168,53 @@ namespace Cook_Book_API.Controllers
             return output;
         }
 
+        //GET /api/Recipes/GetFavouritesRecipes/
+        [HttpGet]
+        [Route("GetFavouritesRecipes/{PageSize}/{PageNumber}")]
+        public ActionResult<List<RecipeModel>> GetFavouritesRecipes(int PageSize = 10, int PageNumber = 1)
+        {
+            List<RecipeModel> output = new List<RecipeModel>();
+
+            try
+            {
+                string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = _context.Users.Find(UserId) as ApplicationUser;
+
+                if (PageNumber <= 0)
+                    PageNumber = 1;
+
+                int skip = (PageNumber - 1) * PageSize;
+                int take = PageSize;
+                int count = _context.Recipes.Where(x => user.FavouriteRecipes.Contains(x.RecipeId.ToString())).Count();
+                int totalPages = CalculateTotalPages(count, PageSize);
+
+                var recipesDB = _context.Recipes.Where(x => user.FavouriteRecipes.Contains(x.RecipeId.ToString())).OrderBy(x => x.RecipeId).Skip(skip).Take(take).ToList();
+
+                foreach (var item in recipesDB)
+                {
+                    RecipeModel singleRecipeModel = _mapper.Map<RecipeModel>(item);
+
+                    string userName = _context.Users
+                  .Where(x => x.Id == item.UserId)
+                  .Select(y => y.UserName)
+                  .SingleOrDefault();
+
+                    singleRecipeModel.UserName = userName;
+                    singleRecipeModel.CurrentPage = PageNumber;
+                    singleRecipeModel.TotalPages = totalPages;
+
+                    output.Add(singleRecipeModel);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got exception.");
+                throw;
+            }
+
+            return output;
+        }
+
         // POST: api/Recipes
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
@@ -176,7 +223,7 @@ namespace Cook_Book_API.Controllers
         {
             Recipe recipeDb = new Recipe();
             try
-            {        
+            {
                 recipeDb = _mapper.Map<Recipe>(recipe);
 
                 string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -186,16 +233,17 @@ namespace Cook_Book_API.Controllers
                 {
                     var extension = Path.GetExtension(recipe.Image.FileName);
 
-                    if (_imageHelper.CheckCorrectExtension(extension)){
+                    if (_imageHelper.CheckCorrectExtension(extension))
+                    {
 
                         var filename = Guid.NewGuid() + extension;
                         string path = _imageHelper.GetImagePath(filename);
                         await SaveImage(path, recipe.Image);
 
                         recipeDb.NameOfImage = filename.ToString();
-                    }                 
+                    }
                 }
-                
+
                 await _context.Recipes.AddAsync(recipeDb);
                 await _context.SaveChangesAsync();
             }
@@ -308,7 +356,7 @@ namespace Cook_Book_API.Controllers
                     return NotFound();
                 }
 
-                if(recipes.UserId != UserId)
+                if (recipes.UserId != UserId)
                 {
                     _logger.LogWarning($"Can not delete recipe: {id}, Another user.");
                     return NotFound();

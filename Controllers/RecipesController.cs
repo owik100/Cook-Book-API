@@ -204,7 +204,7 @@ namespace Cook_Book_API.Controllers
                     singleRecipeModel.TotalPages = totalPages;
 
                     //Check if favourite recipe is our or still public
-                    if(singleRecipeModel.IsPublic || singleRecipeModel.UserName == user.UserName)
+                    if(singleRecipeModel.IsPublic)
                         output.Add(singleRecipeModel);
                 }
             }

@@ -183,6 +183,11 @@ namespace Cook_Book_API.Controllers
                 if (PageNumber <= 0)
                     PageNumber = 1;
 
+                if (user.FavouriteRecipes == null)
+                {
+                    return output;
+                }
+
                 int skip = (PageNumber - 1) * PageSize;
                 int take = PageSize;
                 int count = _context.Recipes.Where(x => user.FavouriteRecipes.Contains(x.RecipeId.ToString())).Count();

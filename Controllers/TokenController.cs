@@ -79,7 +79,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return output;

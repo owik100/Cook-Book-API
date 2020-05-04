@@ -39,7 +39,6 @@ namespace Cook_Book_API.Helpers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
             return output;
         }
@@ -57,7 +56,6 @@ namespace Cook_Book_API.Helpers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return output;

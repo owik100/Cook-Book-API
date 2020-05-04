@@ -90,14 +90,12 @@ namespace Cook_Book_API.Controllers
                     else
                     {
                         _logger.LogError(ex, "Got exception.");
-                        throw;
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return Ok();

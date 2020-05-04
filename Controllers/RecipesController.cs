@@ -70,7 +70,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return output;
@@ -116,7 +115,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return output;
@@ -162,7 +160,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return output;
@@ -216,7 +213,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return output;
@@ -257,7 +253,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return Ok();
@@ -335,14 +330,12 @@ namespace Cook_Book_API.Controllers
                     else
                     {
                         _logger.LogError(ex, "Got exception.");
-                        throw;
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return Ok();
@@ -381,7 +374,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
 
             return Ok();
@@ -410,7 +402,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                //throw;
             }
 
             _logger.LogWarning($"Not found image: {id}");
@@ -433,7 +424,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
         }
 
@@ -452,7 +442,6 @@ namespace Cook_Book_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Got exception.");
-                throw;
             }
         }
 

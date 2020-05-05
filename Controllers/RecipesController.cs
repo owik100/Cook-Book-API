@@ -276,7 +276,7 @@ namespace Cook_Book_API.Controllers
 
                 var oldRecipe = _context.Recipes.Where(x => x.RecipeId.ToString() == recipe.RecipeId).FirstOrDefault();
 
-                if (!string.IsNullOrEmpty(recipe.NameOfImage))
+                if (!string.IsNullOrEmpty(recipe.NameOfImage) && recipe.NameOfImage!= "null")
                 {
                     if (recipe.NameOfImage != oldRecipe.NameOfImage)
                     {

@@ -4,14 +4,16 @@ using Cook_Book_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Cook_Book_API.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200506132914_TryIt")]
+    partial class TryIt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,6 +51,25 @@ namespace Cook_Book_API.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Recipes");
+
+                    b.HasData(
+                        new
+                        {
+                            RecipeId = 1,
+                            Ingredients = "Ziemniaki;Sól",
+                            Instruction = "Pokrój i usmaż ziemniaki. Posól.",
+                            IsPublic = false,
+                            Name = "Frytki"
+                        },
+                        new
+                        {
+                            RecipeId = 2,
+                            Ingredients = "Chleb;Masło",
+                            Instruction = "Posmaruj chleb masłem.",
+                            IsPublic = false,
+                            Name = "Kanapka",
+                            UserId = "7aa6bef9-e1ec-4c38-b70b-89270d1e6a25"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

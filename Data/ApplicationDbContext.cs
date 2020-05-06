@@ -27,13 +27,13 @@ namespace Cook_Book_API.Data
             builder.Entity<ApplicationUser>().Property(nameof(ApplicationUser.FavouriteRecipes)).HasConversion(splitStringConverter);
 
 
-            List<Recipe> recipes = new List<Recipe>
-            {
-                   new Recipe(){RecipeId =1, Name="Frytki", Ingredients = new List<string>{"Ziemniaki", "Sól"}, Instruction ="Pokrój i usmaż ziemniaki. Posól." },
-                   new Recipe(){RecipeId =2, Name="Kanapka", Ingredients = new List<string>{"Chleb", "Masło"}, Instruction ="Posmaruj chleb masłem.", UserId="7aa6bef9-e1ec-4c38-b70b-89270d1e6a25" },
-            };
+            //List<Recipe> recipes = new List<Recipe>
+            //{
+            //       new Recipe(){RecipeId =1, Name="Frytki", Ingredients = new List<string>{"Ziemniaki", "Sól"}, Instruction ="Pokrój i usmaż ziemniaki. Posól." },
+            //       new Recipe(){RecipeId =2, Name="Kanapka", Ingredients = new List<string>{"Chleb", "Masło"}, Instruction ="Posmaruj chleb masłem.", UserId="7aa6bef9-e1ec-4c38-b70b-89270d1e6a25" },
+            //};
 
-            builder.Entity<Recipe>().HasData(recipes);
+            //builder.Entity<Recipe>().HasData(recipes);
         }
     }
 }
